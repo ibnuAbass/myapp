@@ -31,4 +31,4 @@ flutter build apk --release
 
 ## Download APK
 
-[Download latest APK](https://github.com/ibnuAbass/myapp/raw/main/build/app/outputs/flutter-apk/app-release.apk)
+[Download latest APK](https://github.com/ibnuAbass/myapp/raw/main/downloads/app-release.apk)
