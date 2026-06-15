@@ -28,3 +28,7 @@ flutter run
 ```bash
 flutter build apk --release
 ```
+
+## Download APK
+
+[Download latest APK](https://github.com/ibnuAbass/myapp/raw/main/build/app/outputs/flutter-apk/app-release.apk)

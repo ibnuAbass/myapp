@@ -115,6 +115,33 @@ void main() {
     expect(johnTxns.length, 2);
     expect(johnTxns.every((t) => t.isExpense), isTrue);
   });
+
+  test('includes paybill-via-sent in spending by counterparty', () {
+    final transactions = [
+      expense(
+        type: TransactionType.paybill,
+        amount: 3500,
+        businessName: 'Madrid Hotel',
+      ),
+    ];
+
+    final spending = repository.getSpendingByCounterparty(transactions);
+    expect(spending['Madrid Hotel'], 3500);
+  });
+
+  test('extracts counterparty from raw message when fields missing', () {
+    final transaction = MpesaTransaction(
+      id: '1',
+      type: TransactionType.sent,
+      amount: 3500,
+      dateTime: DateTime(2026, 6, 11),
+      rawMessage:
+          'UFB287R9IB Confirmed. Ksh3,500.00 sent to Madrid Hotel for account TTMZ7PDFHK on 11/6/26 at 7:41 AM',
+      transactionId: 'UFB287R9IB',
+    );
+
+    expect(transaction.counterparty, 'Madrid Hotel');
+  });
 }
 
 extension _TestTransaction on MpesaTransaction {

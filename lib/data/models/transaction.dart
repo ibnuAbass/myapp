@@ -52,14 +52,59 @@ class MpesaTransaction extends Equatable {
   String? get counterparty {
     if (isExpense) {
       return _firstNonEmpty([
-        recipientName,
-        businessName,
-        recipientPhone,
-        businessNumber,
-      ]);
+            recipientName,
+            businessName,
+            recipientPhone,
+            businessNumber,
+          ]) ??
+          _extractPartyFromRawMessage(isExpense: true);
     }
     if (isIncome) {
-      return _firstNonEmpty([senderName, businessName, senderPhone]);
+      return _firstNonEmpty([senderName, businessName, senderPhone]) ??
+          _extractPartyFromRawMessage(isExpense: false);
+    }
+    return null;
+  }
+
+  String? _extractPartyFromRawMessage({required bool isExpense}) {
+    if (isExpense) {
+      final paybillViaSent = RegExp(
+        r'sent to\s+(.+?)\s+for account\s+(\S+)',
+        caseSensitive: false,
+      ).firstMatch(rawMessage);
+      if (paybillViaSent != null) {
+        return paybillViaSent.group(1)?.trim();
+      }
+
+      final paidTo = RegExp(
+        r'paid to\s+(.+?)\s+on',
+        caseSensitive: false,
+      ).firstMatch(rawMessage);
+      if (paidTo != null) return paidTo.group(1)?.trim();
+
+      final sentToPhone = RegExp(
+        r'sent to\s+(.+?)\s+([\d\*]{9,12})',
+        caseSensitive: false,
+      ).firstMatch(rawMessage);
+      if (sentToPhone != null) return sentToPhone.group(1)?.trim();
+
+      final withdraw = RegExp(
+        r'Withdraw Ksh[\d,]+\.?\d*\s+from\s+\d+\s*-\s*(.+?)(?:New M-PESA|$)',
+        caseSensitive: false,
+      ).firstMatch(rawMessage);
+      if (withdraw != null) return withdraw.group(1)?.trim();
+    } else {
+      final received = RegExp(
+        r'received Ksh[\d,]+\.?\d*\s+from\s+(.+?)\s+[\d\*]{9,12}',
+        caseSensitive: false,
+      ).firstMatch(rawMessage);
+      if (received != null) return received.group(1)?.trim();
+
+      final deposit = RegExp(
+        r'Give Ksh[\d,]+\.?\d*\s+cash to\s+(.+?)(?:New M-PESA|$)',
+        caseSensitive: false,
+      ).firstMatch(rawMessage);
+      if (deposit != null) return deposit.group(1)?.trim();
     }
     return null;
   }

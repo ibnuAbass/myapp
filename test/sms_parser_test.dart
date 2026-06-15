@@ -45,6 +45,32 @@ void main() {
       expect(results.first.recipientName, 'John Doe');
     });
 
+    test('parses sent to business for account (paybill)', () async {
+      const message =
+          'UFB287R9IB Confirmed. Ksh3,500.00 sent to Madrid Hotel for account TTMZ7PDFHK on 11/6/26 at 7:41 AM New M-PESA balance is Ksh2,469.02. Transaction cost, Ksh25.00.';
+      final results = await smsService.parseMpesaMessages([message]);
+      expect(results.length, 1);
+      expect(results.first.type.name, 'paybill');
+      expect(results.first.amount, 3500.0);
+      expect(results.first.businessName, 'Madrid Hotel');
+      expect(results.first.businessNumber, 'TTMZ7PDFHK');
+      expect(results.first.transactionCost, 25.0);
+      expect(results.first.counterparty, 'Madrid Hotel');
+    });
+
+    test('parses received money message with anonymized phone', () async {
+      const message =
+          'UFCKH7HV5B Confirmed.You have received Ksh3,200.00 from John Doe 0713***345 on 12/6/26 at 11:44 AM  New M-PESA balance is Ksh4,077.02. Download My OneApp on https://saf.cx/lPKcC';
+      final results = await smsService.parseMpesaMessages([message]);
+      expect(results.length, 1);
+      expect(results.first.type.name, 'received');
+      expect(results.first.amount, 3200.0);
+      expect(results.first.senderName, 'John Doe');
+      expect(results.first.senderPhone, '0713***345');
+      expect(results.first.isIncome, true);
+      expect(results.first.counterparty, 'John Doe');
+    });
+
     test('parses deposit message', () async {
       const message =
           'QJ1824QI7Q Confirmed. On 1/10/22 at 7:09 PM Give Ksh2270.00 cash to GERMAN Inv BRANCH New M-PESA balance is Ksh2270.00.';

@@ -137,8 +137,10 @@ class SmsService {
     DateTime? dateTime;
     var transactionId = '';
 
-    final idMatch = RegExp(r'^([A-Z0-9]+)', caseSensitive: false)
-        .firstMatch(trimmedMessage);
+    final idMatch = RegExp(
+      r'^([A-Z0-9]+)',
+      caseSensitive: false,
+    ).firstMatch(trimmedMessage);
     if (idMatch != null) {
       transactionId = (idMatch.group(1) ?? '').toUpperCase();
     }
@@ -151,7 +153,7 @@ class SmsService {
       type = TransactionType.received;
       amount = _parseAmount(trimmedMessage, r'received Ksh([\d,]+\.?\d*)') ?? 0;
       final senderMatch = RegExp(
-        r'from\s+([A-Z\s]+?)\s+(\d{9,12})',
+        r'from\s+([A-Z\s]+?)\s+([\d\*]{9,12})',
         caseSensitive: false,
       ).firstMatch(trimmedMessage);
       if (senderMatch != null) {
@@ -165,8 +167,7 @@ class SmsService {
       dateTime = _parseDate(trimmedMessage);
     } else if (lower.contains('withdraw ksh')) {
       type = TransactionType.withdrawal;
-      amount =
-          _parseAmount(trimmedMessage, r'Withdraw Ksh([\d,]+\.?\d*)') ?? 0;
+      amount = _parseAmount(trimmedMessage, r'Withdraw Ksh([\d,]+\.?\d*)') ?? 0;
       final agentMatch = RegExp(
         r'from\s+(\d+)\s*-\s*(.+?)(?:New M-PESA|$)',
         caseSensitive: false,
@@ -210,12 +211,8 @@ class SmsService {
     } else if (lower.contains('reversal') || lower.contains('reversed')) {
       type = TransactionType.reversal;
       amount =
-          _parseAmount(trimmedMessage, r'Ksh([\d,]+\.?\d*)\s+is credited') ??
-          0;
-      balance = _parseAmount(
-        trimmedMessage,
-        r'balance is Ksh([\d,]+\.?\d*)',
-      );
+          _parseAmount(trimmedMessage, r'Ksh([\d,]+\.?\d*)\s+is credited') ?? 0;
+      balance = _parseAmount(trimmedMessage, r'balance is Ksh([\d,]+\.?\d*)');
       dateTime = _parseDate(trimmedMessage);
     } else if (lower.contains('paid to')) {
       type = lower.contains('pay to pochi')
@@ -236,11 +233,31 @@ class SmsService {
         r'New M-PESA balance is Ksh([\d,]+\.?\d*)',
       );
       dateTime = _parseDate(trimmedMessage);
+    } else if (lower.contains('sent to') && lower.contains('for account')) {
+      type = TransactionType.paybill;
+      amount = _parseAmount(trimmedMessage, r'Ksh([\d,]+\.?\d*)\s*sent') ?? 0;
+      final businessMatch = RegExp(
+        r'sent to\s+(.+?)\s+for account\s+(\S+)',
+        caseSensitive: false,
+      ).firstMatch(trimmedMessage);
+      if (businessMatch != null) {
+        businessName = businessMatch.group(1)?.trim();
+        businessNumber = businessMatch.group(2);
+      }
+      transactionCost = _parseAmount(
+        trimmedMessage,
+        r'Transaction cost, Ksh([\d,]+\.?\d*)',
+      );
+      balance = _parseAmount(
+        trimmedMessage,
+        r'New M-PESA balance is Ksh([\d,]+\.?\d*)',
+      );
+      dateTime = _parseDate(trimmedMessage);
     } else if (lower.contains('sent to') && !lower.contains('paid to')) {
       type = TransactionType.sent;
       amount = _parseAmount(trimmedMessage, r'Ksh([\d,]+\.?\d*)\s*sent') ?? 0;
       final recipientMatch = RegExp(
-        r'sent to\s+([A-Za-z\s]+?)\s+(\d{9,12})',
+        r'sent to\s+([A-Za-z\s]+?)\s+([\d\*]{9,12})',
         caseSensitive: false,
       ).firstMatch(trimmedMessage);
       if (recipientMatch != null) {

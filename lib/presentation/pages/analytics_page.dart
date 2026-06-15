@@ -425,7 +425,46 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     final sorted = entries.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
-    if (sorted.isEmpty) return const SizedBox.shrink();
+    if (sorted.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surface1,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: GoogleFonts.ibmPlexSans(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: GoogleFonts.ibmPlexSans(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              expense
+                  ? 'No spending recorded for this month'
+                  : 'No income recorded for this month',
+              style: GoogleFonts.ibmPlexSans(
+                fontSize: 14,
+                color: AppColors.textTertiary,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     final total = sorted.fold(0.0, (sum, e) => sum + e.value);
 

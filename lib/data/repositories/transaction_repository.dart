@@ -158,7 +158,10 @@ class TransactionRepository {
 
     for (final t in transactions.where(include)) {
       final party = t.counterparty;
-      if (party == null) continue;
+      if (party == null) {
+        print('MPESA-TRANSACTION-NULL-PARTY: $t');
+        continue;
+      }
 
       final key = party.trim().toUpperCase();
       labels.putIfAbsent(key, () => t.counterpartyDisplay);
